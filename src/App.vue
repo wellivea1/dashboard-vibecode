@@ -137,7 +137,6 @@ export default {
          document.title = this.section + ' - Sleep Diary Dashboard';
 
          router.afterEach( to => {
-             this.busy = false;
              this.section = to.name;
              document.title = this.section + ' - Sleep Diary Dashboard';
          });

@@ -34,4 +34,13 @@ const router = new VueRouter({
   routes
 });
 
+router.beforeEach((to,from,next) => {
+  const search = new URL(window.location.href).searchParams;
+  if ( ( search.get("code") || search.get("error") ) && to.name !== 'Load' ) {
+    next({ path: '/' });
+  } else {
+    next();
+  }
+});
+
 export default router;

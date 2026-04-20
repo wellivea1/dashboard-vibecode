@@ -61,6 +61,10 @@
             site_url:    SITE_URL,
      }),
 
+     mounted() {
+         this.$emit("idle");
+     },
+
  }
 
 </script>

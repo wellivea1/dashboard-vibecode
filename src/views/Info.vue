@@ -1099,6 +1099,14 @@
                  this.$router.replace({ path: '/' });
              }
          });
+         diary_manager.add_permanent_callback( 'info', () => {
+             if ( diary_manager.get_diaries().length ) {
+                 this.update_diary();
+             } else if ( this.$route.path != '/' ) {
+                 this.$emit("idle");
+                 this.$router.replace({ path: '/' });
+             }
+         });
      },
 
      watch: {
@@ -1146,6 +1154,7 @@
          },
 
          update_diary() {
+             this.$emit("busy");
              this.worker.postMessage([
                  'diary',
                  diary_manager.merge_diaries().to("storage-line")

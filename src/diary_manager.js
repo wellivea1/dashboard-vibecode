@@ -126,6 +126,9 @@ export default {
             })
         ;
     },
+    add_diary_contents(contents) {
+        diary_loader.load(contents);
+    },
     remove_diary(id) {
         for ( let n=0; n!=diaries.length; ++n ) {
             if ( diaries[n][0] == id ) {
