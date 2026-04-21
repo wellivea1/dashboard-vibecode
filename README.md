@@ -6,6 +6,16 @@ As part of the [Sleep Diary Project](https://sleepdiary.github.io/), this reposi
 
 ## Get Involved
 
+## Configuration
+
+To enable the hosted Google Health import without asking each user for an OAuth Client ID, build the dashboard with:
+
+```text
+VUE_APP_GOOGLE_HEALTH_CLIENT_ID=<Google OAuth Web Client ID>
+```
+
+The Google Cloud OAuth client must be a Web application with `https://sleepdiary.github.io` in its authorized JavaScript origins. Local development can omit this value; the import dialog will then ask for a Client ID.
+
 ### I found a bug, how should I tell you?
 
 [Create a new bug report](https://github.com/sleepdiary/dashboard/issues/new?assignees=&labels=&template=bug_report.md&title=) and we'll get right on it.

@@ -110,8 +110,13 @@ function parse_fitbit_timestamp(value) {
 }
 
 function add_days_to_iso_date(date_string,days) {
-    const date = new Date(date_string + "T00:00:00");
-    date.setDate(date.getDate() + days);
+    const parts = date_string.split("-"),
+          date = new Date(Date.UTC(
+              parseInt(parts[0],10),
+              parseInt(parts[1],10)-1,
+              parseInt(parts[2],10) + days
+          ))
+    ;
     return date.toISOString().slice(0,10);
 }
 

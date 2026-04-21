@@ -62,15 +62,15 @@
                     <v-btn
                         outlined
                         color="primary"
-                        @click="fitbit_popup = true"
+                        @click="open_health_import_popup"
                     >
-                        Import from Fitbit API
+                        Import sleep data
                     </v-btn>
                 </div>
 
                 <p class="mt-3" v-if="!diaries.length">
                     Google/Fitbit exports can be incomplete or slow.<br>
-                    You can also import sleep records directly from the Fitbit API.
+                    You can also import sleep records directly from Google Health or the legacy Fitbit API.
                 </p>
 
                 <p class="mt-6" v-if="!diaries.length">
@@ -135,45 +135,60 @@
         </v-dialog>
 
         <v-dialog
-            v-model="fitbit_popup"
-            width="460"
+            v-model="health_import_popup"
+            width="500"
         >
 
             <v-card>
                 <v-card-title class="text-h5">
-                    Import from Fitbit API
+                    Import Sleep Data
                 </v-card-title>
 
                 <v-card-text>
-                    <p>
-                        Create a Fitbit <strong>Personal</strong> app, then register this exact callback URL in Fitbit:
-                    </p>
-                    <p style="word-break:break-all">
-                        <code>{{fitbit_redirect_uri}}</code>
-                    </p>
-                    <p>
-                        The redirect URI must exactly match a callback URL registered with Fitbit, including the trailing slash.
+                    <v-btn-toggle
+                        v-model="health_import_provider_id"
+                        mandatory
+                        class="mb-4"
+                    >
+                        <v-btn
+                            v-for="provider in health_import_providers"
+                            :key="provider.id"
+                            :value="provider.id"
+                            small
+                        >
+                            {{provider.short_title}}
+                        </v-btn>
+                    </v-btn-toggle>
+
+                    <p
+                        v-for="(line,n) in health_import_provider.setup_lines"
+                        :key="n"
+                        :style="is_health_import_setup_url(line) ? 'word-break:break-all' : ''"
+                    >
+                        <code v-if="is_health_import_setup_url(line)">{{line}}</code>
+                        <template v-else>{{line}}</template>
                     </p>
 
                     <v-text-field
-                        v-model="fitbit_client_id"
-                        label="Client ID"
-                        hint="Paste the Fitbit OAuth 2.0 Client ID for your Personal app"
+                        v-if="health_import_needs_client_id"
+                        v-model="health_import_client_id"
+                        :label="health_import_provider.client_id_label"
+                        :hint="health_import_provider.client_id_hint"
                         persistent-hint
                     />
 
                     <v-menu
-                        ref="fitbit_start"
-                        v-model="show_fitbit_start_picker"
+                        ref="health_import_start"
+                        v-model="show_health_import_start_picker"
                         :close-on-content-click="false"
-                        :return-value.sync="fitbit_start_date"
+                        :return-value.sync="health_import_start_date"
                         transition="scale-transition"
                         offset-y
                         min-width="auto"
                     >
                         <template v-slot:activator="{ on, attrs }">
                             <v-text-field
-                                v-model="fitbit_start_date"
+                                v-model="health_import_start_date"
                                 label="Start date"
                                 prepend-icon="mdi-calendar"
                                 readonly
@@ -182,23 +197,23 @@
                             />
                         </template>
                         <v-date-picker
-                            v-model="fitbit_start_date"
+                            v-model="health_import_start_date"
                             no-title
                             scrollable
-                            :max="fitbit_end_date || undefined"
+                            :max="health_import_end_date || undefined"
                         >
                             <v-spacer></v-spacer>
                             <v-btn
                                 text
                                 color="primary"
-                                @click="show_fitbit_start_picker = false"
+                                @click="show_health_import_start_picker = false"
                             >
                                 Cancel
                             </v-btn>
                             <v-btn
                                 text
                                 color="primary"
-                                @click="$refs.fitbit_start.save(fitbit_start_date)"
+                                @click="$refs.health_import_start.save(health_import_start_date)"
                             >
                                 OK
                             </v-btn>
@@ -206,17 +221,17 @@
                     </v-menu>
 
                     <v-menu
-                        ref="fitbit_end"
-                        v-model="show_fitbit_end_picker"
+                        ref="health_import_end"
+                        v-model="show_health_import_end_picker"
                         :close-on-content-click="false"
-                        :return-value.sync="fitbit_end_date"
+                        :return-value.sync="health_import_end_date"
                         transition="scale-transition"
                         offset-y
                         min-width="auto"
                     >
                         <template v-slot:activator="{ on, attrs }">
                             <v-text-field
-                                v-model="fitbit_end_date"
+                                v-model="health_import_end_date"
                                 label="End date"
                                 prepend-icon="mdi-calendar"
                                 readonly
@@ -225,23 +240,23 @@
                             />
                         </template>
                         <v-date-picker
-                            v-model="fitbit_end_date"
+                            v-model="health_import_end_date"
                             no-title
                             scrollable
-                            :min="fitbit_start_date || undefined"
+                            :min="health_import_start_date || undefined"
                         >
                             <v-spacer></v-spacer>
                             <v-btn
                                 text
                                 color="primary"
-                                @click="show_fitbit_end_picker = false"
+                                @click="show_health_import_end_picker = false"
                             >
                                 Cancel
                             </v-btn>
                             <v-btn
                                 text
                                 color="primary"
-                                @click="$refs.fitbit_end.save(fitbit_end_date)"
+                                @click="$refs.health_import_end.save(health_import_end_date)"
                             >
                                 OK
                             </v-btn>
@@ -249,7 +264,7 @@
                     </v-menu>
 
                     <p class="mb-0">
-                        Sleep Diary only requests the <code>sleep</code> scope, and your Fitbit data stays in your browser.
+                        {{health_import_provider.scope_note}}
                     </p>
                 </v-card-text>
 
@@ -257,7 +272,7 @@
                     <v-btn
                         width="50%"
                         text
-                        @click="fitbit_popup = false"
+                        @click="health_import_popup = false"
                     >
                         Cancel
                     </v-btn>
@@ -265,9 +280,9 @@
                         color="primary"
                         width="50%"
                         text
-                        :disabled="!fitbit_client_id || !fitbit_start_date || !fitbit_end_date || fitbit_loading"
-                        :loading="fitbit_loading"
-                        @click="start_fitbit_import"
+                        :disabled="!health_import_effective_client_id || !health_import_start_date || !health_import_end_date || health_import_loading"
+                        :loading="health_import_loading"
+                        @click="start_health_import"
                     >
                         <v-icon>mdi-cloud-download-outline</v-icon>
                         Connect
@@ -278,17 +293,17 @@
         </v-dialog>
 
         <v-dialog
-            v-model="fitbit_error_popup"
+            v-model="health_import_error_popup"
             width="400"
         >
 
             <v-card>
                 <v-card-title class="text-h5">
-                    Could not import from Fitbit
+                    Could not import sleep data
                 </v-card-title>
 
                 <v-card-text>
-                    {{fitbit_error_message}}
+                    {{health_import_error_message}}
                 </v-card-text>
 
                 <v-card-actions>
@@ -296,7 +311,7 @@
                         color="primary"
                         width="100%"
                         text
-                        @click="fitbit_error_popup = false"
+                        @click="health_import_error_popup = false"
                     >
                         <v-icon>mdi-close</v-icon>
                         Close
@@ -352,20 +367,9 @@
 import diary_manager from "@/diary_manager.js";
 import { DOCS_URL } from "@/constants.js";
 import {
-    clear_fitbit_callback_code,
-    exchange_fitbit_code,
-    fetch_fitbit_sleep_range,
-    get_fitbit_callback_code,
-    get_fitbit_callback_error,
-    get_fitbit_callback_state,
-    get_fitbit_redirect_uri,
-    start_fitbit_auth,
-    validate_fitbit_callback_state,
-} from "@/fitbit_api.js";
-
-const FITBIT_CLIENT_ID_KEY = "dashboard.fitbit.client_id";
-const FITBIT_RANGE_START_KEY = "dashboard.fitbit.range.start";
-const FITBIT_RANGE_END_KEY = "dashboard.fitbit.range.end";
+    HEALTH_IMPORT_PROVIDERS,
+    get_health_import_provider,
+} from "@/health_import.js";
 
 function iso_today(days_ago) {
     return new Date(
@@ -375,9 +379,9 @@ function iso_today(days_ago) {
     ).toISOString().substr(0,10);
 }
 
-function get_saved_fitbit_client_id() {
+function get_saved_item(storage,key) {
     try {
-        return window.localStorage.getItem(FITBIT_CLIENT_ID_KEY) || "";
+        return storage.getItem(key) || "";
     } catch (e) {
         return "";
     }
@@ -406,21 +410,31 @@ export default {
          docs_url: DOCS_URL,
          demo_popup: false,
          common_sleep_diaries: 0,
-         fitbit_popup: false,
-         fitbit_loading: false,
-         fitbit_client_id: get_saved_fitbit_client_id(),
-         fitbit_start_date: iso_today(365),
-         fitbit_end_date: iso_today(0),
-         show_fitbit_start_picker: false,
-         show_fitbit_end_picker: false,
-         fitbit_redirect_uri: get_fitbit_redirect_uri(),
-         fitbit_error_popup: false,
-         fitbit_error_message: '',
+         health_import_providers: HEALTH_IMPORT_PROVIDERS,
+         health_import_provider_id: HEALTH_IMPORT_PROVIDERS[0].id,
+         health_import_popup: false,
+         health_import_loading: false,
+         health_import_client_id: '',
+         health_import_start_date: iso_today(365),
+         health_import_end_date: iso_today(0),
+         show_health_import_start_picker: false,
+         show_health_import_end_picker: false,
+         health_import_error_popup: false,
+         health_import_error_message: '',
      }),
 
      computed: {
          diaries() {
              return this.trigger_rebuild && diary_manager.get_diaries();
+         },
+         health_import_provider() {
+             return get_health_import_provider(this.health_import_provider_id);
+         },
+         health_import_effective_client_id() {
+             return this.get_health_import_client_id();
+         },
+         health_import_needs_client_id() {
+             return !this.health_import_provider.client_id;
          },
      },
 
@@ -432,69 +446,105 @@ export default {
          fetch("/resources/common_sleep_diaries.json")
            .then( r => r.json() )
            .then( j => this.common_sleep_diaries = j );
-         this.restore_fitbit_settings();
-         this.process_fitbit_callback();
+         this.restore_health_import_settings();
+         this.process_health_import_callback();
+     },
+
+     watch: {
+         health_import_provider_id() {
+             this.restore_health_import_settings();
+             if ( this.health_import_popup && this.health_import_provider.preload ) {
+                 this.health_import_provider.preload().catch( () => {} );
+             }
+         },
      },
 
      methods: {
-         get_fitbit_range() {
+         get_health_import_range() {
              return [
-                 this.fitbit_start_date,
-                 this.fitbit_end_date,
+                 this.health_import_start_date,
+                 this.health_import_end_date,
              ].filter( value => value ).slice().sort();
          },
-         set_fitbit_error(message) {
-             this.fitbit_error_message = message;
-             this.fitbit_error_popup = true;
+         get_health_import_client_id(provider) {
+             provider = provider || this.health_import_provider;
+             return provider.client_id || this.health_import_client_id;
          },
-         restore_fitbit_settings() {
+         set_health_import_error(message) {
+             this.health_import_error_message = message;
+             this.health_import_error_popup = true;
+         },
+         is_health_import_setup_url(line) {
+             return /^https?:/.test(line);
+         },
+         restore_health_import_settings(provider) {
+             provider = provider || this.health_import_provider;
              try {
-                 this.fitbit_client_id = sessionStorage.getItem(FITBIT_CLIENT_ID_KEY) || this.fitbit_client_id;
-                 const start = sessionStorage.getItem(FITBIT_RANGE_START_KEY),
-                       end = sessionStorage.getItem(FITBIT_RANGE_END_KEY)
+                 this.health_import_client_id = (
+                     get_saved_item(window.sessionStorage,provider.client_id_storage_key)
+                     || get_saved_item(window.localStorage,provider.client_id_storage_key)
+                     || ""
+                 );
+                 const start = get_saved_item(window.sessionStorage,provider.range_start_storage_key),
+                       end = get_saved_item(window.sessionStorage,provider.range_end_storage_key)
                  ;
                  if ( start && end ) {
-                     this.fitbit_start_date = start;
-                     this.fitbit_end_date = end;
+                     this.health_import_start_date = start;
+                     this.health_import_end_date = end;
                  }
              } catch (e) {
                  // Ignore browsers that block storage access.
              }
          },
-         async process_fitbit_callback() {
-             const callback_error = get_fitbit_callback_error(),
-                   code = get_fitbit_callback_code(),
-                   state = get_fitbit_callback_state()
+         open_health_import_popup() {
+             this.restore_health_import_settings();
+             this.health_import_popup = true;
+             if ( this.health_import_provider.preload ) {
+                 this.health_import_provider.preload().catch( () => {} );
+             }
+         },
+         async process_health_import_callback() {
+             const provider = this.health_import_providers.filter(
+                 provider => provider.get_callback_code && ( provider.get_callback_code() || provider.get_callback_error() )
+             )[0];
+             if ( !provider ) return;
+
+             const callback_error = provider.get_callback_error(),
+                   code = provider.get_callback_code(),
+                   state = provider.get_callback_state()
              ;
              if ( !code && !callback_error ) return;
 
-             clear_fitbit_callback_code();
+             this.health_import_provider_id = provider.id;
+             provider.clear_callback();
 
              if ( callback_error ) {
-                 return this.set_fitbit_error("Fitbit authorization failed: " + callback_error);
+                 return this.set_health_import_error(provider.short_title + " authorization failed: " + callback_error);
              }
 
-             if ( !validate_fitbit_callback_state(state) ) {
-                 return this.set_fitbit_error("Fitbit authorization could not be verified. Please try again.");
+             if ( !provider.validate_callback_state(state) ) {
+                 return this.set_health_import_error(provider.short_title + " authorization could not be verified. Please try again.");
              }
 
-             this.restore_fitbit_settings();
+             this.restore_health_import_settings(provider);
 
-             if ( !this.fitbit_client_id ) {
-                 return this.set_fitbit_error("No Fitbit Client ID was saved for this authorization.");
+             const client_id = this.get_health_import_client_id(provider);
+
+             if ( !client_id ) {
+                 return this.set_health_import_error("No " + provider.short_title + " Client ID was saved for this authorization.");
              }
 
-             const range = this.get_fitbit_range();
+             const range = this.get_health_import_range();
              if ( range.length != 2 ) {
-                 return this.set_fitbit_error("Please choose a start and end date.");
+                 return this.set_health_import_error("Please choose a start and end date.");
              }
 
-             this.fitbit_loading = true;
+             this.health_import_loading = true;
              this.$emit("busy");
 
              try {
-                 const token = await exchange_fitbit_code(this.fitbit_client_id,code),
-                       sleep_data = await fetch_fitbit_sleep_range(
+                 const token = await provider.exchange_code(client_id,code),
+                       sleep_data = await provider.fetch_sleep_range(
                            token.access_token,
                            range[0],
                            range[1],
@@ -502,15 +552,15 @@ export default {
                  ;
 
                  diary_manager.add_diary_contents(JSON.stringify(sleep_data));
-                 this.fitbit_popup = false;
+                 this.health_import_popup = false;
              } catch (error) {
                  this.$emit("idle");
-                 this.set_fitbit_error(error && error.message ? error.message : "Fitbit import failed.");
+                 this.set_health_import_error(error && error.message ? error.message : provider.short_title + " import failed.");
              } finally {
-                 this.fitbit_loading = false;
+                 this.health_import_loading = false;
                  try {
-                     sessionStorage.removeItem(FITBIT_RANGE_START_KEY);
-                     sessionStorage.removeItem(FITBIT_RANGE_END_KEY);
+                     sessionStorage.removeItem(provider.range_start_storage_key);
+                     sessionStorage.removeItem(provider.range_end_storage_key);
                  } catch (e) {
                      // Ignore storage cleanup failures.
                  }
@@ -547,34 +597,65 @@ export default {
            this.$emit("busy");
            diary_manager.add_demo('/resources/common_sleep_diaries/'+filename);
          },
-         async start_fitbit_import() {
-             const range = this.get_fitbit_range();
+         async start_health_import() {
+             const provider = this.health_import_provider,
+                   range = this.get_health_import_range(),
+                   client_id = this.get_health_import_client_id(provider)
+             ;
 
              if ( range.length != 2 ) {
-                 return this.set_fitbit_error("Please choose a start and end date.");
+                 return this.set_health_import_error("Please choose a start and end date.");
+             }
+
+             if ( !client_id ) {
+                 return this.set_health_import_error("Please enter a " + provider.short_title + " Client ID.");
              }
 
              try {
-                 window.localStorage.setItem(FITBIT_CLIENT_ID_KEY,this.fitbit_client_id);
+                 if ( !provider.client_id ) {
+                     window.localStorage.setItem(provider.client_id_storage_key,this.health_import_client_id);
+                 }
              } catch (e) {
                  // Ignore browsers that block storage access.
              }
 
              try {
-                 window.sessionStorage.setItem(FITBIT_CLIENT_ID_KEY,this.fitbit_client_id);
-                 window.sessionStorage.setItem(FITBIT_RANGE_START_KEY,range[0]);
-                 window.sessionStorage.setItem(FITBIT_RANGE_END_KEY,range[1]);
+                 if ( !provider.client_id ) {
+                     window.sessionStorage.setItem(provider.client_id_storage_key,this.health_import_client_id);
+                 }
+                 window.sessionStorage.setItem(provider.range_start_storage_key,range[0]);
+                 window.sessionStorage.setItem(provider.range_end_storage_key,range[1]);
              } catch (e) {
-                 return this.set_fitbit_error("Session storage is required for Fitbit API import.");
+                 return this.set_health_import_error("Session storage is required for sleep data import.");
              }
 
-             this.fitbit_loading = true;
+             this.health_import_loading = true;
 
              try {
-                 await start_fitbit_auth(this.fitbit_client_id);
+                 const token = await provider.start_auth(client_id);
+                 if ( provider.exchange_code ) return;
+
+                 this.$emit("busy");
+                 const sleep_data = await provider.fetch_sleep_range(
+                     token.access_token,
+                     range[0],
+                     range[1],
+                 );
+                 diary_manager.add_diary_contents(JSON.stringify(sleep_data));
+                 this.health_import_popup = false;
              } catch (error) {
-                 this.fitbit_loading = false;
-                 this.set_fitbit_error(error && error.message ? error.message : "Could not start Fitbit authorization.");
+                 this.$emit("idle");
+                 this.set_health_import_error(error && error.message ? error.message : "Could not start " + provider.short_title + " authorization.");
+             } finally {
+                 if ( !provider.exchange_code ) {
+                     this.health_import_loading = false;
+                     try {
+                         sessionStorage.removeItem(provider.range_start_storage_key);
+                         sessionStorage.removeItem(provider.range_end_storage_key);
+                     } catch (e) {
+                         // Ignore storage cleanup failures.
+                     }
+                 }
              }
          },
      },

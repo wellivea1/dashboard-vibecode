@@ -980,6 +980,9 @@
      }),
 
      mounted() {
+         this.worker.onerror = event => {
+             this.$emit("error",event.message || event);
+         };
          this.worker.onmessage = ({data}) => {
              const within_expected_range = ( recent, long_term, expected, range ) => (
                      true
