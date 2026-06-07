@@ -5,10 +5,11 @@
 
 name: Merge and push
 
+# NOTE (fork): the upstream "merge and push" build depends on the private
+# ghcr.io/sleepdiary/builder image, org-level secrets, and a "built" branch
+# that do not exist on this fork. We deploy via deploy-pages.yml instead, so
+# this workflow is manual-only here to avoid failing runs on every push.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:

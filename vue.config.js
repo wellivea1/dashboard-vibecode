@@ -31,9 +31,10 @@ module.exports = {
   transpileDependencies: [
     'vuetify'
   ],
-  publicPath: process.env.NODE_ENV === 'production'
-  ? '/dashboard/'
-  : './',
+  // Allow the deploy workflow to override the base path (e.g. /dashboard-vibecode/
+  // for this fork's GitHub Pages site) without editing this file:
+  publicPath: process.env.VUE_APP_PUBLIC_PATH
+  || (process.env.NODE_ENV === 'production' ? '/dashboard/' : './'),
   devServer: (
     process.env.VUE_APP_DEV_SERVER
     ? {

@@ -1,0 +1,86 @@
+name: Deploy to GitHub Pages
+
+# Builds the dashboard together with our forked core (which includes the new
+# GoogleHealth engine) and publishes a self-contained site to GitHub Pages at
+# https://wellivea1.github.io/dashboard-vibecode/ .
+#
+# Unlike upstream's main.yml, this does not use the private sleepdiary builder
+# image or the org Pages layout. The dashboard loads core from this same site
+# (/dashboard-vibecode/core/...), while the unchanged report/info bundles are
+# loaded from https://sleepdiary.github.io/ (see public/index.html).
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --openssl-legacy-provider
+      VUE_APP_SCRIPT_URL: /dashboard-vibecode/
+      VUE_APP_PUBLIC_PATH: /dashboard-vibecode/
+    steps:
+      - name: Checkout dashboard
+        uses: actions/checkout@v4
+
+      - name: Checkout forked core (includes GoogleHealth engine)
+        uses: actions/checkout@v4
+        with:
+          repository: wellivea1/core-vibecode
+          ref: main
+          path: core-src
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build core bundle
+        working-directory: core-src
+        run: |
+          npm ci
+          make sleepdiary-core.min.js
+
+      - name: Install dashboard dependencies
+        run: npm ci
+
+      - name: Build dashboard
+        run: npm run build
+
+      - name: Stage forked core into the published site
+        run: |
+          mkdir -p docs/core/src/ActivityLog
+          cp core-src/sleepdiary-core.min.js docs/core/sleepdiary-core.min.js
+          if [ -f core-src/sleepdiary-core.min.js.map ]; then
+            cp core-src/sleepdiary-core.min.js.map docs/core/
+          fi
+          cp core-src/src/ActivityLog/preprocessor.js docs/core/src/ActivityLog/preprocessor.js
+          touch docs/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
