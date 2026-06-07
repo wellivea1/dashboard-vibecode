@@ -34,7 +34,7 @@ export const HEALTH_IMPORT_PROVIDERS = [
         "range_end_storage_key": "dashboard.google_health.range.end",
         "setup_lines": GOOGLE_HEALTH_CLIENT_ID ? [] : [
             "Create a Google Cloud Web application client, enable Google Health API, and add this site as an authorized JavaScript origin:",
-            "https://wellivea1.github.io",
+            "https://zeitlog.github.io",
         ],
         "scope_note": "Zeitlog requests only the " + get_google_health_scope() + " scope, and your Google Health data stays in your browser.",
         "preload": load_google_health_auth,

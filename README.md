@@ -4,9 +4,14 @@ Zeitlog is a browser-based sleep and circadian-rhythm tracker for people managin
 
 It is a fork of the [Sleep Diary Project](https://sleepdiary.github.io/) dashboard, adding hosted Fitbit and Google Health import for circadian monitoring.
 
-👉 **[Open Zeitlog](https://wellivea1.github.io/dashboard-vibecode/)**
+👉 **[Open Zeitlog](https://zeitlog.github.io/)** — pre-production / testing instance: **[wellivea1.github.io/dashboard-vibecode](https://wellivea1.github.io/dashboard-vibecode/)**
 
-> Circadian-rhythm documentation and resources for CRDs are planned as the companion **Zeitdex** project.
+> Circadian-rhythm documentation and resources for CRDs live in the companion **Zeitdex** site: [zeitlog.github.io/zeitdex](https://zeitlog.github.io/zeitdex/).
+
+## Environments
+
+- **Production:** <https://zeitlog.github.io/>
+- **Pre-production / testing:** <https://wellivea1.github.io/dashboard-vibecode/>
 
 ## Configuration
 
@@ -16,13 +21,13 @@ To enable the hosted Google Health import without asking each user for an OAuth 
 VUE_APP_GOOGLE_HEALTH_CLIENT_ID=<Google OAuth Web Client ID>
 ```
 
-The Google Cloud OAuth client must be a **Web application** with the deployment origin (e.g. `https://wellivea1.github.io`) listed under Authorized JavaScript origins. If this value is omitted, no Google OAuth client is bundled; the import dialog shows the Google Cloud setup instructions and asks each user for their own Client ID.
+The Google Cloud OAuth client must be a **Web application** with the deployment origins listed under Authorized JavaScript origins — `https://zeitlog.github.io` (production) and `https://wellivea1.github.io` (pre-production / testing). If `VUE_APP_GOOGLE_HEALTH_CLIENT_ID` is omitted, no Google OAuth client is bundled; the import dialog shows the Google Cloud setup instructions and asks each user for their own Client ID.
 
 The app is static and browser-only: it uses the Google Identity Services token flow, so there is no client secret and no backend.
 
 ## Get Involved
 
-Bug reports and feature requests are welcome via [the issue tracker](https://github.com/wellivea1/dashboard-vibecode/issues). Contributions to circadian-rhythm-disorder documentation and resources are especially appreciated.
+Bug reports and feature requests are welcome via [the issue tracker](https://github.com/wellivea1/dashboard-vibecode/issues). Documentation and resources for circadian rhythm disorders live in the companion **[Zeitdex](https://zeitlog.github.io/zeitdex/)** site, where every page can be edited via a pull request — contributions are especially appreciated.
 
 ## License
 
