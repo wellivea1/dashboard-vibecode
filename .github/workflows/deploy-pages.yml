@@ -61,14 +61,19 @@ jobs:
       - name: Build dashboard
         run: npm run build
 
-      - name: Stage forked core into the published site
+      - name: Stage core/report/info into the published site
         run: |
-          mkdir -p docs/core/src/ActivityLog
+          mkdir -p docs/core/src/ActivityLog docs/report docs/info
           cp core-src/sleepdiary-core.min.js docs/core/sleepdiary-core.min.js
           if [ -f core-src/sleepdiary-core.min.js.map ]; then
             cp core-src/sleepdiary-core.min.js.map docs/core/
           fi
           cp core-src/src/ActivityLog/preprocessor.js docs/core/src/ActivityLog/preprocessor.js
+          # report/info are unchanged from upstream; mirror their bundles so both
+          # index.html and the charts web worker (src/info.js) load them from this
+          # site's own base path. -f makes the build fail loudly if upstream is down.
+          curl -fsSL https://sleepdiary.github.io/report/sleepdiary-report.min.js -o docs/report/sleepdiary-report.min.js
+          curl -fsSL https://sleepdiary.github.io/info/sleepdiary-info.min.js -o docs/info/sleepdiary-info.min.js
           touch docs/.nojekyll
 
       - name: Upload Pages artifact

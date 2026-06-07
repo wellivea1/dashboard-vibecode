@@ -134,11 +134,11 @@ export default {
          });
 
          this.section = router.currentRoute.name;
-         document.title = this.section + ' - Sleep Diary Dashboard';
+         document.title = this.section + ' - Zeitlog';
 
          router.afterEach( to => {
              this.section = to.name;
-             document.title = this.section + ' - Sleep Diary Dashboard';
+             document.title = this.section + ' - Zeitlog';
          });
 
      },
