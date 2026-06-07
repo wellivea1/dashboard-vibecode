@@ -6,7 +6,7 @@ It is a fork of the [Sleep Diary Project](https://sleepdiary.github.io/) dashboa
 
 👉 **[Open Zeitlog](https://zeitlog.github.io/)** — pre-production / testing instance: **[wellivea1.github.io/dashboard-vibecode](https://wellivea1.github.io/dashboard-vibecode/)**
 
-> Circadian-rhythm documentation and resources for CRDs live in the companion **Zeitdex** site: [zeitlog.github.io/zeitdex](https://zeitlog.github.io/zeitdex/).
+> Circadian-rhythm documentation and resources for CRDs live in the companion **Zeitdex** site: [zeitdex.github.io](https://zeitdex.github.io/).
 
 ## Environments
 
@@ -27,7 +27,7 @@ The app is static and browser-only: it uses the Google Identity Services token f
 
 ## Get Involved
 
-Bug reports and feature requests are welcome via [the issue tracker](https://github.com/wellivea1/dashboard-vibecode/issues). Documentation and resources for circadian rhythm disorders live in the companion **[Zeitdex](https://zeitlog.github.io/zeitdex/)** site, where every page can be edited via a pull request — contributions are especially appreciated.
+Bug reports and feature requests are welcome via [the issue tracker](https://github.com/wellivea1/dashboard-vibecode/issues). Documentation and resources for circadian rhythm disorders live in the companion **[Zeitdex](https://zeitdex.github.io/)** site, where every page can be edited via a pull request — contributions are especially appreciated.
 
 ## License
 
