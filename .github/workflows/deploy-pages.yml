@@ -31,6 +31,8 @@ jobs:
       NODE_OPTIONS: --openssl-legacy-provider
       VUE_APP_SCRIPT_URL: /dashboard-vibecode/
       VUE_APP_PUBLIC_PATH: /dashboard-vibecode/
+      # Public OAuth Web Client ID (not a secret) so visitors aren't prompted to paste one:
+      VUE_APP_GOOGLE_HEALTH_CLIENT_ID: 898364244521-vlmfbejok0392dfe931i7fiqthip8ii4.apps.googleusercontent.com
     steps:
       - name: Checkout dashboard
         uses: actions/checkout@v4
