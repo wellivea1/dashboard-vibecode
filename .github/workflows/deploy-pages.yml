@@ -35,17 +35,17 @@ jobs:
       VUE_APP_GOOGLE_HEALTH_CLIENT_ID: 898364244521-vlmfbejok0392dfe931i7fiqthip8ii4.apps.googleusercontent.com
     steps:
       - name: Checkout dashboard
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout forked core (includes GoogleHealth engine)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: wellivea1/core-vibecode
           ref: main
           path: core-src
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
@@ -77,7 +77,7 @@ jobs:
           touch docs/.nojekyll
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs
 
@@ -90,4 +90,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
