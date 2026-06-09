@@ -49,6 +49,16 @@
                 </v-list-item>
             </v-list>
 
+            <div
+                v-if="!diaries.length"
+                class="mb-8"
+                style="text-align:center"
+            >
+                <img :src="logo_url" alt="" width="88" height="88">
+                <h1 class="text-h4 font-weight-medium mt-2">Zeit<span style="color:#E0A93B">log</span></h1>
+                <p class="text--secondary mt-1 mb-0">Sleep tracking for circadian rhythm disorders</p>
+            </div>
+
             <div :class="diaries.length?'mt-8 mb-16':''" style="text-align:center">
 
                 <v-btn
@@ -408,6 +418,7 @@ export default {
          trigger_rebuild: 1,
          error: false,
          docs_url: DOCS_URL,
+         logo_url: process.env.BASE_URL + 'logo.svg',
          demo_popup: false,
          common_sleep_diaries: 0,
          health_import_providers: HEALTH_IMPORT_PROVIDERS,
